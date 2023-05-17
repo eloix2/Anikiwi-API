@@ -1,0 +1,14 @@
+###
+POST http://localhost:9000/api/users HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "John",
+    "email": "John@email.com"
+}
+
+###
+GET http://localhost:9000/api/users HTTP/1.1
+
+###
+GET http://localhost:9000/api/users/64615bfa61d7f1c48f050054 HTTP/1.1
