@@ -1,5 +1,5 @@
 ###
-GET http://localhost:9000/api/update HTTP/1.1
+GET http://localhost:9000/api/animes/update HTTP/1.1
 
 ###
 POST http://localhost:9000/api/users HTTP/1.1

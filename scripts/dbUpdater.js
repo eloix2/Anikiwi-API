@@ -3,38 +3,39 @@
 const mongoose = require('mongoose');
 const Anime = require('../src/models/anime');
 
-//Connecting to the database
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+function updateDB() {
 
-//TODO: Change save for findOneAndUpdate
+  fetch('https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database.json')
+    .then(res => res.json())
+    .then(json => {
+      //json variable contains object with data
+      json.data.forEach(async (anime) => {
 
-fetch('https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database.json')
-  .then(res => res.json())
-  .then(json => {
-    //json variable contains object with data
-    json.data.forEach(async (anime) => {
-        //Creating a new anime
-        const newAnime = new Anime({
-            sources: anime.sources,
-            title: anime.title,
-            type: anime.type,
-            episodes: anime.episodes,
-            status: anime.status,
-            season: anime.animeSeason.season,
-            year: anime.animeSeason.year,
-            picture: anime.picture,
-            thumbnail: anime.thumbnail,
-            synonyms: anime.synonyms,
-            relations: anime.relations,
-            tags: anime.tags
+        const filter = { title: anime.title, type: anime.type };
+        const update = {
+          sources: anime.sources,
+          episodes: anime.episodes,
+          status: anime.status,
+          season: anime.animeSeason.season,
+          year: anime.animeSeason.year,
+          picture: anime.picture,
+          thumbnail: anime.thumbnail,
+          synonyms: anime.synonyms,
+          relations: anime.relations,
+          tags: anime.tags
+        };
+
+        await Anime.findOneAndUpdate(filter, update, {
+          new: true,
+          upsert: true // Make this update into an upsert
         });
-        //Saving the anime
-        await newAnime.save();
-    });
-  })
+
+      });
+    })
+    .then(() => { console.log('Updating Database...') })
     .catch(err => console.log(err)
 
-);
+    );
+}
+
+module.exports.updateDB = updateDB;
