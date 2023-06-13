@@ -15,3 +15,18 @@ GET http://localhost:9000/api/users HTTP/1.1
 
 ###
 GET http://localhost:9000/api/users/64615bfa61d7f1c48f050054 HTTP/1.1
+
+###
+GET http://localhost:9000/api/animes/search?year=2020&episodes=1&page=1&limit=2 HTTP/1.1
+
+###Production
+
+###
+GET https://anikiwi-api.onrender.com/api/users HTTP/1.1
+
+###
+GET https://anikiwi-api.onrender.com/api/animes/update HTTP/1.1
+
+###
+GET https://anikiwi-api.onrender.com/api/animes/all HTTP/1.1
+

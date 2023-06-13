@@ -9,33 +9,31 @@ router.get("/animes/update", (req, res) => {
     res.send("Database updated");
 });
 
-router.get("/animes/all", (req, res) => {
-    animeSchema
-    .find()
-    .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}));
-});
-
-router.get("/animes/:id", (req, res) => {
+router.get("/animes/search/:id", (req, res) => {
     animeSchema
     .findById(req.params.id)
     .then((data) => res.json(data))
     .catch((error) => res.json({message: error}));
 });
 
-router.get("/animes/search/:title", (req, res) => {
+router.get("/animes/search", (req, res) => {
+    //QUERY TREATMENT
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "limit"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    //PAGINATION
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skips = (page - 1) * limit;
+
+    //QUERY EXECUTION
     animeSchema
-    .find({title: {$regex: req.params.title, $options: 'i'}})
+    .find(queryObj).skip(skips).limit(limit)
     .then((data) => res.json(data))
     .catch((error) => res.json({message: error}));
 });
 
-router.get("/animes/search/:title/:type", (req, res) => {
-    animeSchema
-    .find({title: {$regex: req.params.title, $options: 'i'}, type: req.params.type})
-    .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}));
-});
 
 
 module.exports = router;
