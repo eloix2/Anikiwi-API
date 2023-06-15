@@ -22,6 +22,10 @@ router.get("/animes/search", (req, res) => {
     const excludedFields = ["page", "limit"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
+    if (queryObj.title) {
+        queryObj.title = { $regex: queryObj.title, $options: "i" };
+    }
+
     //PAGINATION
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
