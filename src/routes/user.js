@@ -12,7 +12,8 @@ router.post('/users', (req, res) => {
       .then(existingUser => {
         if (existingUser) {
           // User with the same email already exists
-          return res.status(409).json({ message: 'User already exists with this email.' });
+          // return user data
+          return res.status(409).json(existingUser);
         } else {
           // Create a new user
           const user = new userSchema({ username, email });
