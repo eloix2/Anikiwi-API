@@ -14,6 +14,8 @@ Content-Type: application/json
 }
 
 ###
+GET http://localhost:9000/api/state HTTP/1.1
+###
 GET http://localhost:9000/api/users HTTP/1.1
 
 ###
@@ -29,13 +31,25 @@ Content-Type: application/json
 {
     "userId": "64cfc857b5bb02d3431b822d",
     "animeId": "646a6abaf8bf94963ddf2a43",
-    "watchStatus": "watching",
-    "episodes_watched": 5,
-    "score": 5
+    "watchStatus": "Watching",
+    "episodesWatched": 5,
+    "score": 6,
+    "startingDate": "2020-01-01",
+    "finishedDate": "2020-01-02"
 
 }
 
+###
+GET http://localhost:9000/api/ratings HTTP/1.1
+
+
 ### PRODUCTION
+
+
+###
+GET https://anikiwi-api.onrender.com/ HTTP/1.1
+###
+GET https://anikiwi-api.onrender.com/api/state HTTP/1.1
 
 ###
 GET https://anikiwi-api.onrender.com/api/users HTTP/1.1

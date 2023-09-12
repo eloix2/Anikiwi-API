@@ -13,15 +13,23 @@ const ratingSchema = new mongoose.Schema({
     },
     watchStatus: {
         type: String, 
-        enum: ['watching', 'completed', 'planning', 'dropped'],
+        enum: ['Watching', 'Completed', 'Planning', 'Dropped'],
         required: true,
     },
-    episodes_watched: { 
+    episodesWatched: { 
         type: Number, 
         default: 0 
     },
     score: {
         type: Number,
+        default: null
+    },
+    startingDate: {
+        type: Date,
+        default: null
+    },
+    finishedDate: {
+        type: Date,
         default: null
     },
 

@@ -3,13 +3,27 @@ const ratingSchema = require("../models/rating");
 
 const router = express.Router();
 
-//create rating
+// Upsert rating
 router.post("/rate", (req, res) => {
-    const rating = ratingSchema(req.body);
-    rating
-    .save()
+    const { userId, animeId } = req.body;
+    
+    const ratingData = {
+        userId,
+        animeId,
+        watchStatus: req.body.watchStatus,
+        episodesWatched: req.body.episodesWatched || 0,
+        score: req.body.score || null,
+        startingDate: req.body.startingDate || null,
+        finishedDate: req.body.finishedDate || null,
+    };
+
+    ratingSchema.findOneAndUpdate(
+        { userId, animeId },
+        ratingData,
+        { upsert: true, new: true }
+    )
     .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}));
+    .catch((error) => res.json({ message: error }));
 });
 
 //get all ratings
