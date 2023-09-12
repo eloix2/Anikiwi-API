@@ -42,6 +42,15 @@ Content-Type: application/json
 ###
 GET http://localhost:9000/api/ratings HTTP/1.1
 
+###
+GET http://localhost:9000/api/ratings/64cfc857b5bb02d3431b822d/646a6abaf8bf94963ddf2a43 HTTP/1.1
+
+
+###
+GET http://localhost:9000/api/animes/646a6abaf8bf94963ddf2a43 HTTP/1.1
+
+###
+GET http://localhost:9000/api/ratings/user/64cfc857b5bb02d3431b822d/animes HTTP/1.1
 
 ### PRODUCTION
 

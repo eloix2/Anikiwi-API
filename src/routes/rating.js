@@ -42,4 +42,37 @@ router.get("/ratings/:id", (req, res) => {
     .catch((error) => res.json({message: error}));
 });
 
+//get rating by user id and anime id
+router.get("/ratings/:userId/:animeId", (req, res) => {
+    ratingSchema
+    .findOne({ userId: req.params.userId, animeId: req.params.animeId })
+    .then((data) => res.json(data))
+    .catch((error) => res.json({message: error}));
+});
+
+//get ratings by user id
+router.get("/ratings/user/:userId", (req, res) => {
+    ratingSchema
+    .find({ userId: req.params.userId })
+    .then((data) => res.json(data))
+    .catch((error) => res.json({message: error}));
+});
+
+//get ratings by anime id
+router.get("/ratings/anime/:animeId", (req, res) => {
+    ratingSchema
+    .find({ animeId: req.params.animeId })
+    .then((data) => res.json(data))
+    .catch((error) => res.json({message: error}));
+});
+
+//get animes rated by user
+router.get("/ratings/user/:userId/animes", (req, res) => {
+    ratingSchema
+    .find({ userId: req.params.userId })
+    .populate("animeId")
+    .then((data) => res.json(data))
+    .catch((error) => res.json({message: error}));
+});
+
 module.exports = router;
