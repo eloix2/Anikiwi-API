@@ -5,13 +5,10 @@ const router = express.Router();
 
 //script to update the database
 router.get("/animes/update", async (req, res) => {
-    try {
-      await updater.updateDB();
-      res.send("Database updated");
-    } catch (error) {
-      console.error("Error updating database:", error);
-      res.status(500).send("Internal Server Error");
-    }
+    res.send("Database update request received. Updating in the background.");
+  
+    // Start the update process in the background
+    updater.updateDB();
   });
   
 
