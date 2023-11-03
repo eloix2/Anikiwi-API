@@ -1,16 +1,20 @@
-//Gets a json from an url and updates the database in mongodb
-//Importing modules
 const mongoose = require('mongoose');
 const Anime = require('../src/models/anime');
 
-function updateDB() {
+async function updateDB() {
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database.json');
+    const json = await response.json();
 
-  fetch('https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database.json')
-    .then(res => res.json())
-    .then(json => {
-      //json variable contains object with data
-      json.data.forEach(async (anime) => {
+    const batchSize = 100;
+    const totalRecords = json.data.length;
 
+    console.log(`Updating ${totalRecords} records in batches of ${batchSize}...`);
+
+    for (let i = 0; i < totalRecords; i += batchSize) {
+      const batch = json.data.slice(i, i + batchSize);
+
+      await Promise.all(batch.map(async (anime) => {
         const filter = { title: anime.title, type: anime.type };
         const update = {
           sources: anime.sources,
@@ -27,15 +31,18 @@ function updateDB() {
 
         await Anime.findOneAndUpdate(filter, update, {
           new: true,
-          upsert: true // Make this update into an upsert
+          upsert: true
         });
+      }));
 
-      });
-    })
-    .then(() => { console.log('Updating Database...') })
-    .catch(err => console.log(err)
+      console.log(`Processed ${Math.min(i + batchSize, totalRecords)} records out of ${totalRecords}`);
+    }
 
-    );
+    console.log('Database update complete.');
+
+  } catch (error) {
+    console.error('Error updating database:', error);
+  }
 }
 
 module.exports.updateDB = updateDB;

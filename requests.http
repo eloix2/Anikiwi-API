@@ -61,7 +61,14 @@ GET https://anikiwi-api.onrender.com/ HTTP/1.1
 GET https://anikiwi-api.onrender.com/api/state HTTP/1.1
 
 ###
+GET https://anikiwi-api-13fbded2aee1.herokuapp.com/api/state HTTP/1.1
+
+###
 GET https://anikiwi-api.onrender.com/api/users HTTP/1.1
+
+###
+GET https://anikiwi-api-13fbded2aee1.herokuapp.com/api/users HTTP/1.1
+
 
 ###
 GET https://anikiwi-api.onrender.com/api/animes/update HTTP/1.1
@@ -69,3 +76,5 @@ GET https://anikiwi-api.onrender.com/api/animes/update HTTP/1.1
 ###
 GET https://anikiwi-api.onrender.com/api/animes/search?year=2020&episodes=1&page=1&limit=50 HTTP/1.1
 
+###
+GET https://anikiwi-api-13fbded2aee1.herokuapp.com/api/animes/search?year=2020&episodes=1&page=1&limit=50 HTTP/1.1
