@@ -75,4 +75,28 @@ router.get("/ratings/user/:userId/animes", (req, res) => {
     .catch((error) => res.json({message: error}));
 });
 
+router.get("/ratings/search", (req, res) => {
+    // QUERY TREATMENT
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "limit"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    if (queryObj.watchStatus) {
+        queryObj.watchStatus = { $regex: queryObj.watchStatus, $options: "i" };
+    }
+
+    // PAGINATION
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skips = (page - 1) * limit;
+
+    // QUERY EXECUTION
+    ratingSchema
+        .find(queryObj).skip(skips).limit(limit)
+        .populate('animeId')   // Populate anime information if needed
+        .then((data) => res.json(data))
+        .catch((error) => res.json({message: error}));
+});
+
+
 module.exports = router;
