@@ -35,7 +35,7 @@ router.get("/ratings", (req, res) => {
 });
 
 //get rating by id
-router.get("/ratings/:id", (req, res) => {
+router.get("/rating/:id", (req, res) => {
     ratingSchema
     .findById(req.params.id)
     .then((data) => res.json(data))
