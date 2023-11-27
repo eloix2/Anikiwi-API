@@ -2,6 +2,7 @@ const express = require("express");
 const userSchema = require("../models/user");
 const ratingSchema = require("../models/rating");
 const animeSchema = require("../models/anime");
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -43,55 +44,99 @@ router.get("/users/:id", (req, res) => {
     .catch((error) => res.json({message: error}));
 });
 
-
-
-// Function to get anime recommendations for a user based on a subset of highest-rated animes' tags
+// Get anime recommendations for a user by ID
 async function getAnimeRecommendations(userId) {
   try {
-    // Find the user's ratings
+    // Step 1: Get User Ratings
     const userRatings = await ratingSchema
-      .find({ userId })
-      .populate('animeId', 'title tags'); // Populate anime details with only title and tags
+    .find({ userId: userId, watchStatus: "Completed" })
+    .sort({ score: -1 }); // Sorting by score in descending order
 
+    // Step 2: Check if userRatings are empty or have less than 3 animes
     if (userRatings.length === 0) {
-      return { error: "User has no completed ratings" };
+      // Return 3 random animes
+      const randomAnimes = await animeSchema.aggregate([{ $sample: { size: 3 } }]);
+      return { recommendations: randomAnimes, isRandom: true };
     }
 
-    // Sort user's ratings by score in descending order
-    const sortedUserRatings = userRatings.sort((a, b) => b.score - a.score);
+    // Step 3: Check if userRatings have less than 3 animes
+    if (userRatings.length < 3) {
+      // Take one rating of userRatings, and duplicate it in the list, until userRatings.length is 3
+      while (userRatings.length < 3) {
+        userRatings.push(userRatings[0]);
+      }
+    }
 
-    // Take a subset of highest-rated user ratings (e.g., top 20%)
-    const subsetSize = Math.ceil(0.2 * sortedUserRatings.length);
-    const subsetUserRatings = sortedUserRatings.slice(0, subsetSize);
+    // Step 4: Get the top 30% of userRatings and random shuffle until we get 3
+    const top30Percent = Math.ceil(0.3 * userRatings.length);
+    const top30PercentRatings = userRatings.slice(0, top30Percent);
 
-    // Take a fraction of tags from the subset (e.g., top 30%)
-    const tagFraction = 0.3;
-    const uniqueTags = subsetUserRatings
-      .flatMap(rating => rating.animeId.tags)
-      .reduce((acc, tag) => {
-        if (Math.random() < tagFraction) {
-          acc.add(tag);
-        }
-        return acc;
-      }, new Set());
+    // Random shuffle the top 30%
+    const shuffledTop30Percent = top30PercentRatings.sort(() => Math.random() - 0.5);
 
-    // Convert unique tags set to an array
-    const uniqueTagsArray = Array.from(uniqueTags);
+    // Check if we have less than 3 animes after shuffling
+    if (shuffledTop30Percent.length < 3) {
+      // Add the next better userRatings after the 30% until we have 3
+      const remainingRatings = userRatings.slice(top30Percent);
+      const neededRatings = 3 - shuffledTop30Percent.length;
+      const additionalRatings = remainingRatings.slice(0, neededRatings);
+      shuffledTop30Percent.push(...additionalRatings);
+    }
 
-    // Find animes with similar tags
-    const similarAnimes = await animeSchema
-      .find({
-        tags: { $in: uniqueTagsArray },
-        _id: { $nin: sortedUserRatings.map((rating) => rating.animeId._id) }, // Exclude animes the user has already watched
-      }).limit(100); // Limit the result to 100 animes
+    // Extract animeIds from shuffledTop30Percent ratings
+    const shuffledAnimeIds = shuffledTop30Percent.map(rating => rating.animeId);
 
-    // Shuffle the array of similar animes
-    const shuffledAnimes = similarAnimes.sort(() => Math.random() - 0.5);
+    // Step 5: Find similar animes for each shuffled anime
+    const similarAnimes = [];
 
-    // Limit the result to 3 recommendations
-    const finalRecommendations = shuffledAnimes.slice(0, 3);
+    for (const animeId of shuffledAnimeIds) {
+      // Find the anime associated with the current animeId
+      const shuffledAnime = await animeSchema.findById(animeId);
 
-    return { recommendations: finalRecommendations };
+      // console log
+      console.log(shuffledAnime);
+
+      // Extract tags from the shuffled anime
+      const shuffledAnimeTags = shuffledAnime.tags;
+
+      // Find an anime with the most overlapping tags
+      const similarAnime = await animeSchema.aggregate([
+        {
+          $match: {
+            tags: { $in: shuffledAnimeTags }, // Animes with at least one tag in common with the shuffled anime
+            _id: { $nin: shuffledAnimeIds }, // Exclude animes the user has already watched
+          },
+        },
+        {
+          $addFields: {
+            commonTagsCount: {
+              $size: {
+                $setIntersection: ["$tags", shuffledAnimeTags], // Count the common tags
+              },
+            },
+          },
+        },
+        {
+          $sort: {
+            commonTagsCount: -1, // Sort by the number of common tags in descending order
+          },
+        },
+        {
+          $limit: 10, // Take the 10 first animes with the most common tags
+        },
+      ]);
+
+      // Add the similar anime to the list
+      if (similarAnime.length > 0) {
+        // Add a random anime from the similar animes
+        const randomIndex = Math.floor(Math.random() * similarAnime.length);
+        similarAnimes.push(similarAnime[randomIndex]);
+      }
+    }
+
+    // Now similarAnimes contains 3 animes that are similar to the shuffled animes
+    return { recommendations: similarAnimes , isRandom: false};
+
   } catch (error) {
     return { error: error.message };
   }
@@ -99,15 +144,10 @@ async function getAnimeRecommendations(userId) {
 
 
 
-
-
-
 // Get anime recommendations for a user by ID
 router.get("/users/:id/recommendations", async (req, res) => {
   try {
     const userId = req.params.id;
-
-    // For example, you can use the getAnimeRecommendations function from above
     const recommendations = await getAnimeRecommendations(userId);
 
     res.json(recommendations);
