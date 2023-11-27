@@ -56,7 +56,7 @@ async function getAnimeRecommendations(userId) {
     if (userRatings.length === 0) {
       // Return 3 random animes
       const randomAnimes = await animeSchema.aggregate([{ $sample: { size: 3 } }]);
-      return { recommendations: randomAnimes }; // Could add isRandom: true to the response
+      return { recommendations: randomAnimes, isRandom: true };
     }
 
     // Step 3: Check if userRatings have less than 3 animes
@@ -135,7 +135,7 @@ async function getAnimeRecommendations(userId) {
     }
 
     // Now similarAnimes contains 3 animes that are similar to the shuffled animes
-    return { recommendations: similarAnimes };
+    return { recommendations: similarAnimes , isRandom: false};
 
   } catch (error) {
     return { error: error.message };
