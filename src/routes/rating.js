@@ -102,6 +102,7 @@ router.get("/ratings/search", (req, res) => {
 router.put("/rating/:id/addEpisode", (req, res) => {
     ratingSchema
     .findByIdAndUpdate(req.params.id, {$inc: {episodesWatched: 1}})
+    .populate("animeId")
     .then((data) => res.json(data))
     .catch((error) => res.json({message: error}));
 });
