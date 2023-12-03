@@ -98,5 +98,12 @@ router.get("/ratings/search", (req, res) => {
         .catch((error) => res.json({message: error}));
 });
 
+// Add 1 to episodes watched of a rating
+router.put("/rating/:id/addEpisode", (req, res) => {
+    ratingSchema
+    .findByIdAndUpdate(req.params.id, {$inc: {episodesWatched: 1}})
+    .then((data) => res.json(data))
+    .catch((error) => res.json({message: error}));
+});
 
 module.exports = router;
