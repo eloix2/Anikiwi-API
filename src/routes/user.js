@@ -157,6 +157,47 @@ router.get("/users/:id/recommendations", async (req, res) => {
   }
 });
   
-    
+// Get statistics for a user by ID
+router.get("/users/:id/stats", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const userRatings = await ratingSchema.find({ userId: userId });
+    const completedAnimes = userRatings.filter(rating => rating.watchStatus === "Completed");
+    const userStats = {
+      totalAnimesCompleted: completedAnimes.length,
+      totalEpisodesSeen: userRatings.reduce((acc, cur) => acc + cur.episodesWatched, 0),
+      meanScoreCompleted: completedAnimes.reduce((acc, cur) => acc + cur.score, 0) / completedAnimes.length,
+      
+      // animes completed per score: Count the number of animes completed with each score, from 0 to 10
+      // include this format {"score": 0, "count": 2},
+      animesCompletedPerScore: completedAnimes.reduce((acc, cur) => {
+        if (cur.score === null) {
+          return acc;
+        }
+
+        acc[cur.score].count += 1;
+        return acc;
+      }, Array(11).fill(0).map((_, i) => ({ score: i, count: 0 }))),
+      
+      
+      // episodes seen per score: Count the number of episodes seen for each score, from 0 to 10
+      // include this format {"score": 0, "count": 2},
+      episodesSeenPerScore: userRatings.reduce((acc, cur) => {
+        if (cur.score === null) {
+          return acc;
+        }
+
+        acc[cur.score].count += cur.episodesWatched;
+        return acc;
+      }, Array(11).fill(0).map((_, i) => ({ score: i, count: 0 }))),
+
+    };
+
+    res.json(userStats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});    
 
 module.exports = router;
