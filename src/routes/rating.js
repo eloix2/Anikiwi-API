@@ -78,11 +78,43 @@ router.get("/ratings/user/:userId/animes", (req, res) => {
 router.get("/ratings/search", (req, res) => {
     // QUERY TREATMENT
     const queryObj = { ...req.query };
-    const excludedFields = ["page", "limit"];
+    const excludedFields = ["page", "limit", "minScore", "maxScore", "minStartDate", "maxStartDate", "minFinishedDate", "maxFinishedDate"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
     if (queryObj.watchStatus) {
         queryObj.watchStatus = { $regex: queryObj.watchStatus, $options: "i" };
+    }
+
+    // Add filtering for minScore and maxScore
+    if (req.query.minScore || req.query.maxScore) {
+        queryObj.score = {};
+        if (req.query.minScore) {
+            queryObj.score.$gte = parseFloat(req.query.minScore);
+        }
+        if (req.query.maxScore) {
+            queryObj.score.$lte = parseFloat(req.query.maxScore);
+        }
+    }
+
+    // Add filtering for date range (startingDate and finishedDate)
+    if (req.query.minStartDate || req.query.maxStartDate) {
+        queryObj.startingDate = {};
+        if (req.query.minStartDate) {
+            queryObj.startingDate.$gte = new Date(req.query.minStartDate);
+        }
+        if (req.query.maxStartDate) {
+            queryObj.startingDate.$lte = new Date(req.query.maxStartDate);
+        }
+    }
+
+    if (req.query.minFinishedDate || req.query.maxFinishedDate) {
+        queryObj.finishedDate = {};
+        if (req.query.minFinishedDate) {
+            queryObj.finishedDate.$gte = new Date(req.query.minFinishedDate);
+        }
+        if (req.query.maxFinishedDate) {
+            queryObj.finishedDate.$lte = new Date(req.query.maxFinishedDate);
+        }
     }
 
     // PAGINATION
