@@ -75,6 +75,12 @@ router.get("/ratings/user/:userId/animes", (req, res) => {
     .catch((error) => res.json({message: error}));
 });
 
+
+function parseDateStringToDate(dateString) {
+    const [day, month, year] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // Note: Months are 0-indexed in JavaScript Dates
+}
+
 router.get("/ratings/search", (req, res) => {
     // QUERY TREATMENT
     const queryObj = { ...req.query };
@@ -97,10 +103,15 @@ router.get("/ratings/search", (req, res) => {
     }
 
     // Extracting minDate and maxDate from query parameters
-    const minDate = queryObj.minDate;
-    const maxDate = queryObj.maxDate;
+    const minDateString = queryObj.minDate;
+    const maxDateString = queryObj.maxDate;
     delete queryObj.minDate;
     delete queryObj.maxDate;
+
+    // Convert date strings to Date objects
+    const minDate = minDateString ? parseDateStringToDate(minDateString) : null;
+    const maxDate = maxDateString ? parseDateStringToDate(maxDateString) : null;
+
 
     // Add $or condition for startingDate and finishedDate
     if (minDate && maxDate) {
