@@ -78,7 +78,7 @@ router.get("/ratings/user/:userId/animes", (req, res) => {
 router.get("/ratings/search", (req, res) => {
     // QUERY TREATMENT
     const queryObj = { ...req.query };
-    const excludedFields = ["page", "limit", "minScore", "maxScore", "minStartDate", "maxStartDate", "minFinishedDate", "maxFinishedDate"];
+    const excludedFields = ["page", "limit", "minScore", "maxScore"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
     if (queryObj.watchStatus) {
@@ -96,25 +96,28 @@ router.get("/ratings/search", (req, res) => {
         }
     }
 
-    // Add filtering for date range (startingDate and finishedDate)
-    if (req.query.minStartDate || req.query.maxStartDate) {
-        queryObj.startingDate = {};
-        if (req.query.minStartDate) {
-            queryObj.startingDate.$gte = new Date(req.query.minStartDate);
-        }
-        if (req.query.maxStartDate) {
-            queryObj.startingDate.$lte = new Date(req.query.maxStartDate);
-        }
-    }
+    // Extracting minDate and maxDate from query parameters
+    const minDate = queryObj.minDate;
+    const maxDate = queryObj.maxDate;
+    delete queryObj.minDate;
+    delete queryObj.maxDate;
 
-    if (req.query.minFinishedDate || req.query.maxFinishedDate) {
-        queryObj.finishedDate = {};
-        if (req.query.minFinishedDate) {
-            queryObj.finishedDate.$gte = new Date(req.query.minFinishedDate);
-        }
-        if (req.query.maxFinishedDate) {
-            queryObj.finishedDate.$lte = new Date(req.query.maxFinishedDate);
-        }
+    // Add $or condition for startingDate and finishedDate
+    if (minDate && maxDate) {
+        queryObj.$or = [
+            { startingDate: { $gte: new Date(minDate), $lte: new Date(maxDate) } },
+            { finishedDate: { $gte: new Date(minDate), $lte: new Date(maxDate) } }
+        ];
+    } else if (minDate) {
+        queryObj.$or = [
+            { startingDate: { $gte: new Date(minDate) } },
+            { finishedDate: { $gte: new Date(minDate) } }
+        ];
+    } else if (maxDate) {
+        queryObj.$or = [
+            { startingDate: { $lte: new Date(maxDate) } },
+            { finishedDate: { $lte: new Date(maxDate) } }
+        ];
     }
 
     // PAGINATION
