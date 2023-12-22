@@ -104,7 +104,7 @@ async function getAnimeRecommendations(userId) {
         {
           $match: {
             tags: { $in: shuffledAnimeTags }, // Animes with at least one tag in common with the shuffled anime
-            _id: { $nin: shuffledAnimeIds }, // Exclude animes the user has already watched
+            _id: { $nin: [...shuffledAnimeIds, ...similarAnimes.map(anime => anime._id)] }, // Exclude animes the user has already watched
           },
         },
         {
