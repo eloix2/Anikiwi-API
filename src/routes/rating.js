@@ -26,14 +26,6 @@ router.post("/rate", (req, res) => {
     .catch((error) => res.json({ message: error }));
 });
 
-//get all ratings
-router.get("/ratings", (req, res) => {
-    ratingSchema
-    .find()
-    .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}));
-});
-
 //get rating by id
 router.get("/rating/:id", (req, res) => {
     ratingSchema
