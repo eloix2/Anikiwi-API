@@ -28,12 +28,13 @@ router.post('/users', (req, res) => {
       .catch(error => res.status(500).json({ message: 'Error while checking user existence.', error }));
   });
 
-//get user by id
+//get user by id without returning email
 router.get("/users/:id", (req, res) => {
-    userSchema
-    .findById(req.params.id)
-    .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}));
+  userSchema
+      .findById(req.params.id)
+      .select('-email')  // Excluir el campo 'email'
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
 });
 
 // Get anime recommendations for a user by ID
